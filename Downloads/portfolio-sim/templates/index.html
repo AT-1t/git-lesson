@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Portfolio Outcome Simulator — Monte Carlo Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ============ CONTROL RAIL ============ -->
+  <aside class="rail">
+    <div class="brand">
+      <span class="brand-eyebrow">MONTE CARLO ENGINE</span>
+      <h1 class="brand-title">Portfolio<br>Outcome<br>Simulator</h1>
+    </div>
+
+    <form id="sim-form" class="controls">
+
+      <div class="field">
+        <label for="initial_investment">Investment amount</label>
+        <div class="input-prefix">
+          <span>$</span>
+          <input type="number" id="initial_investment" name="initial_investment"
+                 value="10000" min="0" step="100" required>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="expected_return">
+          Expected annual return
+          <span class="value-readout" id="expected_return_readout">7.0%</span>
+        </label>
+        <input type="range" id="expected_return" name="expected_return"
+               value="7" min="-10" max="25" step="0.5">
+      </div>
+
+      <div class="field">
+        <label for="volatility">
+          Annual volatility
+          <span class="value-readout" id="volatility_readout">15.0%</span>
+        </label>
+        <input type="range" id="volatility" name="volatility"
+               value="15" min="0" max="60" step="0.5">
+      </div>
+
+      <div class="field">
+        <label for="horizon_years">
+          Investment horizon
+          <span class="value-readout" id="horizon_years_readout">10 yrs</span>
+        </label>
+        <input type="range" id="horizon_years" name="horizon_years"
+               value="10" min="1" max="50" step="1">
+      </div>
+
+      <div class="field">
+        <label for="num_simulations">
+          Number of simulations
+          <span class="value-readout" id="num_simulations_readout">2,000</span>
+        </label>
+        <input type="range" id="num_simulations" name="num_simulations"
+               value="2000" min="100" max="20000" step="100">
+      </div>
+
+      <button type="submit" class="run-btn" id="run-btn">
+        <span class="run-btn-label">Run simulation</span>
+        <span class="run-btn-spinner" aria-hidden="true"></span>
+      </button>
+
+      <p class="disclaimer">
+        Educational tool only — not investment advice. Assumes lognormal
+        (Geometric Brownian Motion) returns with constant drift &amp; volatility.
+      </p>
+    </form>
+  </aside>
+
+  <!-- ============ MAIN STAGE ============ -->
+  <main class="stage">
+
+    <div id="empty-state" class="empty-state">
+      <div class="empty-glyph">◎</div>
+      <p>Set your assumptions on the left and run the engine to see<br>the full spread of possible outcomes.</p>
+    </div>
+
+    <div id="results" class="results hidden">
+
+      <!-- Hero readout -->
+      <section class="hero-row">
+        <div class="hero-stat hero-stat--primary">
+          <span class="hero-label">Median outcome</span>
+          <span class="hero-number" id="stat-median">—</span>
+          <span class="hero-sub" id="stat-median-multiple">—</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-label">5th percentile</span>
+          <span class="hero-number hero-number--rose" id="stat-p5">—</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-label">95th percentile</span>
+          <span class="hero-number hero-number--teal" id="stat-p95">—</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-label">Probability of loss</span>
+          <span class="hero-number hero-number--rose" id="stat-prob-loss">—</span>
+        </div>
+      </section>
+
+      <!-- Probability cone -->
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Simulated portfolio paths</h2>
+          <span class="panel-sub">5–95th &amp; 25–75th percentile bands, median path, and sample trajectories</span>
+        </div>
+        <div id="paths-chart" class="chart chart--tall"></div>
+      </section>
+
+      <!-- Histogram + stats grid -->
+      <section class="split-row">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Distribution of ending values</h2>
+            <span class="panel-sub">Across all simulated runs</span>
+          </div>
+          <div id="hist-chart" class="chart"></div>
+        </div>
+
+        <div class="panel stats-panel">
+          <div class="panel-head">
+            <h2>Summary statistics</h2>
+            <span class="panel-sub">Ending portfolio value</span>
+          </div>
+          <dl class="stats-grid" id="stats-grid"><!-- filled by JS --></dl>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
